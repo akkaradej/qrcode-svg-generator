@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code</title>
+  <style>
+    html,body {
+      margin: 0;
+      padding: 0;
+    }
+    #container {
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    Type text to generate qrcode per line.
+    <textarea id="textarea" rows="30" style="width: 100%;"></textarea>
+    Width: <input id="widthInput" type="text" value="256">
+    Height: <input id="heightInput" type="text" value="256">
+    <button onclick="save()">Save</button>
+  </div>
+  
+  <script src="./qrcode.js"></script>
+  <script src="./FileSaver.min.js"></script>
+  <script src="./jszip.min.js"></script>
+  <script>
+    function save() {
+      var texts = document.getElementById('textarea').value.split('\n');
+      texts = texts.filter(text => text.trim() !== '');
+      var zip = new JSZip();
+      for (var i = 0; i < texts.length; i++) {
+        zip.file(`qrcode-${i+1}.svg`, new Blob([generateSvg(texts[i])], {type:"image/svg+xml"}));
+      }
+      zip.generateAsync({type:"blob"}).then(function (blob) {
+          saveAs(blob, "qrcode.zip");
+      });
+    }
+
+    function generateSvg(text) {
+      var qrcode = new QRCode({ 
+        content: text,
+        padding: 4,
+        width: document.getElementById('widthInput').value,
+        height: document.getElementById('heightInput').value,
+        color: "#000000",
+        background: "#ffffff",
+        ecl: "M",
+      });
+      return qrcode.svg();
+    }
+  </script>
+</body>
+</html>
